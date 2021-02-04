@@ -1,5 +1,7 @@
 package recfun
 
+import scala.annotation.tailrec
+
 object Main {
 
   def main(args: Array[String]) {
@@ -27,13 +29,14 @@ object Main {
     */
   def balance(chars: List[Char]): Boolean = {
     def balancesChar(open: Char, close: Char): Boolean =
-      open match {
-        case '(' => close == ')'
-        case '[' => close == ']'
-        case '{' => close == '}'
+      close match {
+        case ')' => open == '('
+        case ']' => open == '['
+        case '}' => open == '{'
         case _ => false
       }
 
+    @tailrec
     def addOrRemoveChars(openChars: List[Char], remainingChars: List[Char]): List[Char] = {
       val OPEN_CHARACTERS = Set[Char]('(', '[', '{')
       val CLOSE_CHARACTERS = Set[Char](')', ']', '}')
@@ -74,6 +77,33 @@ object Main {
 
   /**
     * Exercise 3
+    *
+    * Write a recursive function that counts how many different ways you can make change for an amount,
+    * given a list of coin denominations.
+    *
+    * For example, there are 3 ways to give change for 4 if you have coins
+    * with denomination 1 and 2: 1+1+1+1, 1+1+2, 2+2.
+    *
+    * Do this exercise by implementing the countChange function in Main.scala.
+    * This function takes an amount to change, and a list of unique denominations for the coins.
     */
-  def countChange(money: Int, coins: List[Int]): Int = 1
+  def countChange(money: Int, coins: List[Int]): Int = {
+    def loop(money: Int, coins: List[Int], sum: Int): Int = {
+      // if there are no coin denominations, then we have no way to determine ways of dividing our money
+      if(coins.isEmpty) sum
+      // if there is no money, then there's only one way to represent that value => 0
+      else if (money == 0) sum + 1
+      // in any case where the head element in coins has a greater value than money,
+      // remove it from the coins list and try again
+      else if (coins.head > money)
+        loop(money, coins.tail, sum)
+      // reduce money to 0, while accumulating a sum of "ways" by subtracting coins.head from money
+      // in doing so, you'll  go through each iteration of each way to subtract from money
+      // while accumulating a total
+      else
+        loop(money, coins.tail, sum + loop(money - coins.head, coins, 0))
+    }
+
+    loop(money, coins, 0)
+  }
 }
